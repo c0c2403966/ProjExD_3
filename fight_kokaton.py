@@ -147,43 +147,51 @@ class Bomb:
 
 def main():
     pg.display.set_caption("たたかえ！こうかとん")
-    screen = pg.display.set_mode((WIDTH, HEIGHT))    
+    screen = pg.display.set_mode((WIDTH, HEIGHT))
     bg_img = pg.image.load("fig/pg_bg.jpg")
     bird = Bird((300, 200))
     bomb = Bomb((255, 0, 0), 10)
     beam = None  # ゲーム初期化時にはビームは存在しない
     clock = pg.time.Clock()
     tmr = 0
+
     while True:
+        # ① イベント処理
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 return
             if event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
                 # スペースキー押下でBeamクラスのインスタンス生成
-                beam = Beam(bird)            
-        screen.blit(bg_img, [0, 0])
-        
-        if bomb is not None:
-            if bird.rct.colliderect(bomb.rct):
-                # ゲームオーバー時に，こうかとん画像を切り替え，1秒間表示させる
-                bird.change_img(8, screen)
-                pg.display.update()
-                time.sleep(1)
-                return
-        if bomb is not None:
-            if beam is not None:
-                if beam.rct.colliderect(bomb.rct):
-                    # ビームが爆弾に当たったら，爆弾とビームを消す
-                    beam = None
-                    bomb = None
+                beam = Beam(bird)
 
+        # ② キー状態を毎フレーム必ず取得（ここが重要！）
         key_lst = pg.key.get_pressed()
+
+        # ③ 背景描画
+        screen.blit(bg_img, [0, 0])
+
+        # ④ こうかとん vs 爆弾（ゲームオーバー）
+        if bomb is not None and bird.rct.colliderect(bomb.rct):
+            bird.change_img(8, screen)  # やられこうかとん
+            pg.display.update()
+            time.sleep(1)
+            return
+
+        # ⑤ ビーム vs 爆弾（こうかとんが喜ぶ）
+        if bomb is not None and beam is not None and beam.rct.colliderect(bomb.rct):
+            beam = None
+            bomb = None
+            bird.change_img(6, screen)  # 喜びこうかとん
+            pg.display.update()
+            # ゲームは続行するなら return はしない
+
+        # ⑥ 各オブジェクト更新
         bird.update(key_lst, screen)
         if beam is not None:
-            beam.update(screen)   
-        bomb.update(screen)
-        if bomb is not None:  # 爆弾が存在していたら
-             bomb.update(screen)
+            beam.update(screen)
+        if bomb is not None:
+            bomb.update(screen)
+
         pg.display.update()
         tmr += 1
         clock.tick(50)
