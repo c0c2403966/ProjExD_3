@@ -173,6 +173,9 @@ def main():
         # ④ こうかとん vs 爆弾（ゲームオーバー）
         if bomb is not None and bird.rct.colliderect(bomb.rct):
             bird.change_img(8, screen)  # やられこうかとん
+            fonto = pg.font.Font(None, 80)
+            txt = fonto.render("Game Over", True, (255, 0, 0))
+            screen.blit(txt, [WIDTH//2-150, HEIGHT//2])
             pg.display.update()
             time.sleep(1)
             return
