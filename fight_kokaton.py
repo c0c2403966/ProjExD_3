@@ -29,15 +29,15 @@ class Bird:
     """
     ゲームキャラクター（こうかとん）に関するクラス
     """
-    delta = {  # 押下キーと移動量の辞書
+    delta = {  
         pg.K_UP: (0, -5),
         pg.K_DOWN: (0, +5),
         pg.K_LEFT: (-5, 0),
         pg.K_RIGHT: (+5, 0),
     }
     img0 = pg.transform.rotozoom(pg.image.load("fig/3.png"), 0, 0.9)
-    img = pg.transform.flip(img0, True, False)  # デフォルトのこうかとん（右向き）
-    imgs = {  # 0度から反時計回りに定義
+    img = pg.transform.flip(img0, True, False)  
+    imgs = {  
         (+5, 0): img,  # 右
         (+5, -5): pg.transform.rotozoom(img, 45, 0.9),  # 右上
         (0, -5): pg.transform.rotozoom(img, 90, 0.9),  # 上
@@ -101,7 +101,6 @@ class Score:
         """現在のスコアから文字列Surfaceを作り直す"""
         self.img = self.fonto.render(f"スコア: {self.score}", True, self.color)
         self.rct = self.img.get_rect()
-        # 画面左下（x = 100, 下から 50 px）
         self.rct.center = (100, HEIGHT - 50)
 
     def add(self, amount: int = 1):
@@ -177,7 +176,7 @@ class Explosion:
     def __init__(self, bomb: Bomb):
         # explosion.gif を読み込み
         img0 = pg.image.load("fig/explosion.gif")
-        # 上下左右反転した画像も作る（チラチラ用）
+        # 上下左右反転した画像も作る
         img1 = pg.transform.flip(img0, True, True)
         self.imgs = [img0, img1]
 
@@ -239,7 +238,7 @@ def main():
                 time.sleep(1)
                 return
 
-               # ビーム vs 爆弾（複数ビーム＆複数爆弾）
+            # ビーム vs 爆弾（複数ビーム＆複数爆弾）
         for i, beam in enumerate(beams):
             if beam is None:     
                 continue
