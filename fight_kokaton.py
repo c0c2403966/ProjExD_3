@@ -84,6 +84,55 @@ class Bird:
             self.img = __class__.imgs[tuple(sum_mv)]
         screen.blit(self.img, self.rct)
 
+class Score:
+    """
+    スコア表示に関するクラス
+    """
+    def __init__(self):
+        # フォント設定（スライド p37 の例）
+        self.fonto = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 30)
+        self.color = (0, 0, 255)  # 青
+        self.score = 0            # 初期スコア
+        # 最初の文字列 Surface を作る
+        self.update_img()
+
+    def update_img(self):
+        """現在のスコアから文字列Surfaceを作り直す"""
+        self.img = self.fonto.render(f"スコア: {self.score}", True, self.color)
+        self.rct = self.img.get_rect()
+        # 画面左下（x = 100, 下から 50 px）
+        self.rct.center = (100, HEIGHT - 50)
+
+    def add(self, amount: int = 1):
+        """スコアを増やして、画像を作り直す"""
+        self.score += amount
+        self.update_img()
+
+    def update(self, screen: pg.Surface):
+        """スコアの画像を描画する"""
+        screen.blit(self.img, self.rct)
+
+    class Score:
+        def __init__(self):
+         self.fonto = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 30)
+         self.color = (0, 0, 255)
+         self.score = 0
+         self.update_img()
+
+        def update_img(self):
+         self.img = self.fonto.render(f"スコア: {self.score}", True, self.color)
+         self.rct = self.img.get_rect()
+         self.rct.center = (100, HEIGHT - 50)
+
+        def add(self, amount: int = 1):
+         self.score += amount
+         self.update_img()
+
+        def update(self, screen: pg.Surface):
+         screen.blit(self.img, self.rct)
+
+
+
 
 class  Beam:
     """
@@ -154,6 +203,7 @@ def main():
     #     bombs.append(bomb)
     bombs = [Bomb((255, 0, 0), 10) for _ in range(NUM_OF_BOMBS)]
     beam = None  # ゲーム初期化時にはビームは存在しない
+    score = Score() 
     clock = pg.time.Clock()
     tmr = 0
     while True:
@@ -183,6 +233,11 @@ def main():
                     bombs[b] = None
                     bird.change_img(6, screen)
                     pg.display.update()
+                    beam = None
+                    bombs[b] = None
+                    bird.change_img(6, screen)
+                    score.add(1)        # ★ スコア +1
+                    pg.display.update()
 
         bombs = [bomb for bomb in bombs if bomb  is not None]
 
@@ -193,6 +248,7 @@ def main():
         if bomb is not None:  # 爆弾が存在していたら
          for bomb in bombs:  # 爆弾が存在していたら
             bomb.update(screen)
+        score.update(screen)
         pg.display.update()
         tmr += 1
         clock.tick(50)
