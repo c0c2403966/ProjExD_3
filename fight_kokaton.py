@@ -169,7 +169,36 @@ class Bomb:
             self.vy *= -1
         self.rct.move_ip(self.vx, self.vy)
         screen.blit(self.img, self.rct)
+        
+class Explosion:
+    """
+    爆発エフェクトに関するクラス
+    """
+    def __init__(self, bomb: Bomb):
+        # explosion.gif を読み込み
+        img0 = pg.image.load("fig/explosion.gif")
+        # 上下左右反転した画像も作る（チラチラ用）
+        img1 = pg.transform.flip(img0, True, True)
+        self.imgs = [img0, img1]
 
+        # 爆発位置は「爆発した爆弾の中心」
+        self.rct = self.imgs[0].get_rect()
+        self.rct.center = bomb.rct.center
+
+        # 表示時間（フレーム数）
+        self.life = 20
+
+    def update(self, screen: pg.Surface):
+        """
+        lifeを減らしながら爆発を描画
+        """
+        if self.life <= 0:
+            return
+        self.life -= 1
+
+        # life の偶奇で画像を切り替えてチラチラさせる
+        img = self.imgs[self.life % 2]
+        screen.blit(img, self.rct)
 
 def main():
     pg.display.set_caption("たたかえ！こうかとん")
@@ -179,8 +208,9 @@ def main():
 
     # 爆弾・ビーム・スコアの初期化
     bombs = [Bomb((255, 0, 0), 10) for _ in range(NUM_OF_BOMBS)]
-    beams: list[Beam] = []   # ★ 複数ビーム用リスト
+    beams: list[Beam] = []   
     score = Score()
+    explosions: list[Explosion] = []
 
     clock = pg.time.Clock()
     tmr = 0
@@ -192,7 +222,7 @@ def main():
                 return
             if event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
                 # スペースキー押下で Beam インスタンス生成（複数ビーム）
-                beams.append(Beam(bird))   # ★ beam じゃなくて beams に追加
+                beams.append(Beam(bird))   
 
         # 背景描画
         screen.blit(bg_img, [0, 0])
@@ -201,18 +231,24 @@ def main():
         for bomb in bombs:
             if bird.rct.colliderect(bomb.rct):
                 bird.change_img(8, screen)
+                fonto = pg.font.Font(None, 80)
+                txt = fonto.render("Game Over", True, (255, 0, 0))
+                screen.blit(txt, [WIDTH//2 - 150, HEIGHT//2])
+
                 pg.display.update()
                 time.sleep(1)
                 return
 
                # ビーム vs 爆弾（複数ビーム＆複数爆弾）
         for i, beam in enumerate(beams):
-            if beam is None:      # ★ None ならスキップ
+            if beam is None:     
                 continue
             for j, bomb in enumerate(bombs):
-                if bomb is None:  # ★ None ならスキップ
+                if bomb is None:  
                     continue
                 if beam.rct.colliderect(bomb.rct):
+                    explosions.append(Explosion(bomb))
+
                     beams[i] = None       # このビームは削除予定
                     bombs[j] = None       # この爆弾も削除予定
                     bird.change_img(6, screen)
@@ -230,6 +266,13 @@ def main():
         # ビームを更新（リストの全ビームを描画）
         for beam in beams:
             beam.update(screen)
+
+        alive_explosions = []
+        for ex in explosions:
+            ex.update(screen)
+            if ex.life > 0:
+                  alive_explosions.append(ex)
+        explosions = alive_explosions
 
         # 爆弾の更新
         for bomb in bombs:
